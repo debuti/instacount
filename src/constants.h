@@ -1,3 +1,6 @@
+#define DEBUG    true
+#define LOG(str) if (DEBUG) Serial.println(str);
+
 #define XSTR(s)	 STR(s)
 #define STR(s)	 #s
 
@@ -59,8 +62,8 @@
 #define HTML_GLOBAL_HELP \
 "<div class=\"alert info\">" \
 "  <strong>Instacount instructions</strong>" \
-"  <p>The configuration of instacount is made through a captive wifi portal. At first, since no configuration is yet made, instacount will expose the captive portal by default. Just connect to it and modify the parameters to fit your needs. If at some point you want to reconfigure instacount, just press the reset button twice, and the captive portal will showup again. Whenever the led stays on for 10 seconds or so after boot, the config portal will be on and -conFiG- will be shown in the display . Mind that if the configuration cannot be applied the captive portal will show up again.</p>" \
-"  <p>Sadly, Instagram has no public API to retrieve the followers count for a given user. Because of that, instacount uses web scrapping methods to retrieve this information. Although it works, it is not the best solution since Instagram  controls the number of requests made to its servers and can deny the access to resources for a given user. As of April 2020 the quota is 500 requests/user*day, meaning that a request can be made each 2.88 minutes</p>" \
+"  <p>The configuration of instacount is made through a captive wifi portal. At first, since no configuration is yet made, instacount will expose the captive portal by default. Just connect to it and modify the parameters to fit your needs. If at some point you want to reconfigure instacount, just press the reset button twice, and the captive portal will show up again. Whenever the led stays on for 10 seconds or so after boot, and -conFiG- is shown in the display, the config portal will be on. Mind that if the configuration cannot be applied the captive portal will show up again.</p>" \
+"  <p>Sadly, Instagram has no public API to retrieve the followers count for a given user. Because of that, instacount uses web scrapping methods to retrieve this information. Although it works, it is not the best solution as Instagram controls the number of requests made to its servers and can deny the access to resources for a given user. As of April 2020 the quota is 500 requests/user*day, meaning that a request can be made each 2.88 minutes</p>" \
 "  <p>To overcome this limitation, instacount uses two concepts combined:" \
 "    <ul>" \
 "    <li>Poll more often at daytime and less often at night.</li>" \
@@ -68,6 +71,7 @@
 "    </ul>" \
 "  </p>" \
 "  <p>The display dots will be lightened in order to show the amount of time left until the next request.</p>" \
+"  <p>Last, Instagram handles suspicious activities by issuing a challenge. If a given account is challenged, it wont be able to login and thus retrieve the count. To overcome this just login to the account from a web browser and response to the challenge. As instacount wont warn about this, to detect and be able to solve this, it is best to use your own accounts with instacount (and not dummy accounts)</p>" \
 "</div>"
 
 #define HTML_PROFILE_HELP\

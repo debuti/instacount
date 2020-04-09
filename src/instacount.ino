@@ -80,14 +80,14 @@ WiFiClientSecure client;
 DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
 LedControl lc = LedControl(DISPLAY_DATA_IN, DISPLAY_CLK, DISPLAY_LOAD, MAX7219_COUNT);
 
-char ap[] = DEFAULT_AP;
-char pw[] = DEFAULT_PW;
+char ap[] PROGMEM = DEFAULT_AP;
+char pw[] PROGMEM = DEFAULT_PW;
 
-const unsigned char caCert[] = DIGICERT_SHA2_HIGH_ASSURANCE_SERVER_CA;
+const unsigned char caCert[] PROGMEM = DIGICERT_SHA2_HIGH_ASSURANCE_SERVER_CA;
 const unsigned int caCertLen = (sizeof(caCert) / sizeof(caCert[0]));
-const char* host = INSTA_HOST;
+const char* host PROGMEM = INSTA_HOST;
 const int httpsPort = INSTA_PORT;
-const char url_postfix[] = INSTA_API_POSTFIX;
+const char url_postfix[] PROGMEM = INSTA_API_POSTFIX;
 
 bool shouldSaveConfig  = false;                         // flag for saving data
 bool enteredConfigMode = false;                         // flag for state machine
@@ -115,38 +115,34 @@ config_t config = {
 
 void printConfig(config_t* config) {
   Serial.println("config {");
-  Serial.println(String("  profile : ")+config->profile);
-  Serial.println(String("  maxreqs : ")+config->max_requests_day_per_account);
-  Serial.println(String("  night {"));
-  Serial.println(String("    start :\t")+config->night.start);
-  Serial.println(String("    end :\t")+config->night.end);
-  Serial.println(String("    spacing :\t")+config->night.spacing);
-  Serial.println(String("  }"));
-  Serial.println(String("  day {"));
-  Serial.println(String("    start :\t")+config->day.start);
-  Serial.println(String("    end :\t")+config->day.end);
-  Serial.println(String("    spacing :\t")+config->day.spacing);
-  Serial.println(String("  }"));
-  Serial.println(String("  accounts[")+config->accounts_nb+"] {");
+  Serial.print("  profile : ");Serial.println(config->profile);
+  Serial.print("  maxreqs : ");Serial.println(config->max_requests_day_per_account);
+  Serial.println("  \t\tstart\tend\tspacing");
+  Serial.print("  night :\t");Serial.print(config->night.start);Serial.print("\t");Serial.print(config->night.end);Serial.print("\t");Serial.println(config->night.spacing);
+  Serial.print("  day :\t\t");Serial.print(config->day.start);Serial.print("\t");Serial.print(config->day.end);Serial.print("\t");Serial.println(config->day.spacing);
+  Serial.print("  accounts[");Serial.print(config->accounts_nb);Serial.println("] {");
   for (int i=0; i<config->accounts_nb; i++) {
-    Serial.println(String("    account {"));
-    Serial.println(String("      usr :\t\t")+config->accounts[i]->usr);
-    Serial.print(String("      pwd :\t\t"));
-    for (int j=0; j<strlen(config->accounts[i]->pwd); j++) Serial.print('*');
-    Serial.println();
-    Serial.println(String("      cool :\t\t")+config->accounts[i]->cooldown_until);
-    Serial.println(String("      lasttry :\t\t")+config->accounts[i]->lasttry);
-    Serial.println(String("      logins_nb :\t")+config->accounts[i]->logins_nb);
-    Serial.println(String("      ok_nb :\t\t")+config->accounts[i]->ok_nb);
-    Serial.println(String("      ko_nb :\t\t")+config->accounts[i]->ko_nb);
-    Serial.println(String("      csrftoken :\t")+(config->accounts[i]->csrftoken?config->accounts[i]->csrftoken:"NULL"));
-    Serial.println(String("      cookies[")+config->accounts[i]->cookies_nb+"] {");
-    for (int j=0; j<config->accounts[i]->cookies_nb; j++)
-      Serial.println(String("        ") + config->accounts[i]->cookies[j]->k + " : " + config->accounts[i]->cookies[j]->v);
-    Serial.println(String("      }"));
-    Serial.println(String("    }"));
+    Serial.println("    account {");
+    {
+      Serial.print("      usr/pwd :\t\t");Serial.print(config->accounts[i]->usr);Serial.print(":");
+      for (int j=0; j<strlen(config->accounts[i]->pwd); j++) Serial.print('*');
+      Serial.println();
+    }
+    Serial.print("      cool :\t\t");Serial.println(config->accounts[i]->cooldown_until);
+    Serial.print("      lasttry :\t\t");Serial.println(config->accounts[i]->lasttry);
+    {
+      Serial.println("      logins_nb\tko_nb\tok_nb");
+      Serial.print("      ");Serial.print(config->accounts[i]->logins_nb); Serial.print("\t\t");Serial.print(config->accounts[i]->ko_nb);Serial.print("\t");Serial.println(config->accounts[i]->ok_nb);
+    }
+    Serial.print("      csrftoken :\t");Serial.println((config->accounts[i]->csrftoken?config->accounts[i]->csrftoken:"NULL"));
+    Serial.print("      cookies[");Serial.print(config->accounts[i]->cookies_nb);Serial.println("] {");
+    for (int j=0; j<config->accounts[i]->cookies_nb; j++) {
+      Serial.print("        ");Serial.print(config->accounts[i]->cookies[j]->k);Serial.print( " : ");Serial.println(config->accounts[i]->cookies[j]->v);
+    }
+    Serial.println("      }");
+    Serial.println("    }");
   }
-  Serial.println(String("  }"));
+  Serial.println("  }");
   Serial.println("}");
 }
 
@@ -306,8 +302,12 @@ void setup() {
   /* Start the UART */
   Serial.begin(115200);
   Serial.println("");
-  Serial.print("Initializing. Available heap: ");
-  Serial.println(ESP.getFreeHeap());
+  Serial.print("Initializing. Free HEAP: ");
+  Serial.print(ESP.getFreeHeap());
+  Serial.print("/");
+  Serial.print(ESP.getHeapFragmentation());
+  Serial.print("/");
+  Serial.println(ESP.getMaxFreeBlockSize());
 
   /* Start the display */
   lc.shutdown(0, false);
@@ -392,7 +392,7 @@ void setup() {
     delay(1000);
     time_t tnow = time(nullptr);
     Serial.print("Current time: ");
-    Serial.print(String(ctime(&tnow)));
+    Serial.print(ctime(&tnow));
 
     // Load root certificate in DER format into WiFiClientSecure object
     bool res = client.setCACert(caCert, caCertLen);
@@ -417,15 +417,16 @@ void setup() {
 }
 
 #define HANDLE_RETURN_CODE {                     \
-  if (line.startsWith(String("HTTP/1.1 "))) {    \
+  if (line.startsWith("HTTP/1.1 ")) {            \
     line.remove(0, strlen("HTTP/1.1 "));         \
     int end = line.indexOf(' ');                 \
     returncode = line.substring(0, end).toInt(); \
   }                                              \
 }
 
+//TODO: Dont use Strings here, just go and replace = and ; with \0 to access the values
 #define HANDLE_SET_COOKIE {                                           \
-  if (line.startsWith(String("Set-Cookie: "))) {                      \
+  if (line.startsWith("Set-Cookie: ")) {                              \
     line.remove(0, strlen("Set-Cookie: "));                           \
     int sep = line.indexOf('=');                                      \
     int end = line.indexOf(';');                                      \
@@ -471,7 +472,7 @@ void logout(account_t* account) {
 
 bool getCSRF(account_t* account) {
   Serial.print("Getting CSRF for ");
-  Serial.println(host);
+  Serial.print(host);
 
   /* Connect to remote server */
   if (!client.connect(host, httpsPort)) {
@@ -486,28 +487,30 @@ bool getCSRF(account_t* account) {
   }
 
   /* Get the initial cookies */
-  client.print(String("GET / HTTP/1.1\r\n") +
-               "Host: " + host + "\r\n" +
-               "User-Agent: " + STORIES_UA + "\r\n" +
-               "Connection: close\r\n\r\n");
+  client.print("GET / HTTP/1.1\r\n");
+  client.print("Host: ");client.print(host);client.print("\r\n");
+  client.print("User-Agent: ");client.print(STORIES_UA);client.print("\r\n");
+  client.print("Connection: close\r\n\r\n");
 
   long returncode = 0;
   while (client.connected() || client.available()) {
    if (client.available()) {
     String line = client.readStringUntil('\n');
-
+    LOG(line)
     HANDLE_RETURN_CODE
     HANDLE_SET_COOKIE
+    if (line.equals("\r")) break;
    }
   }
 
+  Serial.print(" -> ");Serial.println(returncode);
   return (returncode == 200);
 }
 
 
 bool login(account_t* account) {
   Serial.print("Login to ");
-  Serial.println(host);
+  Serial.print(host);
 
   /* Connect to remote server */
   if (!client.connect(host, httpsPort)) {
@@ -521,47 +524,57 @@ bool login(account_t* account) {
     return false;
   }
 
-  client.print(String("POST ") + LOGIN_PATH + " HTTP/1.1\r\n" +
-               "Host: " + host + "\r\n" +
-               "User-Agent: " + STORIES_UA + "\r\n" +
-               "X-CSRFToken: " + account->csrftoken + "\r\n" +
-               "Content-Type: " + "application/x-www-form-urlencoded" + "\r\n" +
-               "Content-Length: " + String(strlen("username=") +
-                                           strlen(account->usr) +
-                                           strlen("&password=") +
-                                           strlen(account->pwd)) + "\r\n" +
-               "Connection: close\r\n");
-  for (int idx=0; idx<account->cookies_nb; idx++)
-    client.print(String("Cookie: ")+account->cookies[idx]->k+"="+account->cookies[idx]->v+"\r\n");
-  client.print(String("\r\n") +
-               "username="+account->usr+"&password="+account->pwd);
+  client.print("POST ");client.print(LOGIN_PATH);client.print(" HTTP/1.1\r\n");
+  client.print("Host: ");client.print(host);client.print("\r\n");
+  client.print("User-Agent: ");client.print(STORIES_UA);client.print("\r\n");
+  client.print("X-CSRFToken: ");client.print(account->csrftoken);client.print("\r\n");
+  client.print("Content-Type: ");client.print("application/x-www-form-urlencoded");client.print("\r\n");
+  client.print("Content-Length: ");client.print(strlen("username=") +
+                                                strlen(account->usr) +
+                                                strlen("&password=") +
+                                                strlen(account->pwd));client.print("\r\n");
+  client.print("Connection: close\r\n");
+  for (int idx=0; idx<account->cookies_nb; idx++) {
+    client.print("Cookie: ");client.print(account->cookies[idx]->k);client.print("=");client.print(account->cookies[idx]->v);client.print("\r\n");
+  }
+  client.print("\r\n");
+  client.print("username=");client.print(account->usr);client.print("&password=");client.print(account->pwd);
 
   long returncode = 0;
   while (client.connected() || client.available()) {
     if (client.available()) {
       String line = client.readStringUntil('\n');
-
+      LOG(line)
       HANDLE_RETURN_CODE
       HANDLE_SET_COOKIE
 
-      if ((returncode == 200) && (line.indexOf(String("\"authenticated\": true")) != -1)) {
+      if ((returncode == 200) && (line.indexOf("\"authenticated\": true") != -1)) {
         account->logins_nb++;
+        Serial.print(" -> ");Serial.println(returncode);
         return true;
+      }
+      if ((returncode == 400) && (line.indexOf("\"checkpoint_required\"") != -1)) {
+        logout(account);
+        Serial.print(" -> ");Serial.println(returncode);
+        Serial.print("The account ");Serial.print(account->usr);Serial.println(" has been checkpointd! Login into your account from a web browser to unlock it");
+        return false;
       }
     }
   }
 
+  Serial.print(" -> ");Serial.println(returncode);
+  logout(account);
   return false;
 }
 
 
 /**
-   Connects to instagram and returns the count
+ * Connects to instagram and returns the count
  **/
 long followersCount(account_t* account) {
   // Connect to remote server
-  Serial.print("Connecting to ");
-  Serial.println(host);
+  Serial.print("Fetching from ");
+  Serial.print(host);
 
   if (!client.connect(host, httpsPort)) {
     Serial.println("connection failed");
@@ -575,38 +588,46 @@ long followersCount(account_t* account) {
   }
 
   /* Make the request */
-  client.print(String("GET ") + "/" + config.profile + INSTA_API_POSTFIX + " HTTP/1.1\r\n" +
-               "Host: " + host + "\r\n" +
-               "User-Agent: " + CHROME_WIN_UA + "\r\n" +
-               "X-CSRFToken: " + account->csrftoken + "\r\n" +
-               "Connection: close\r\n");
-  for (int idx=0; idx<account->cookies_nb; idx++)
-    client.print(String("Cookie: ")+account->cookies[idx]->k+"="+account->cookies[idx]->v+"\r\n");
-  client.print(String("\r\n"));
+  client.print("GET ");client.print("/");client.print(config.profile);client.print(INSTA_API_POSTFIX);client.print(" HTTP/1.1\r\n");
+  client.print("Host: ");client.print(host);client.print("\r\n");
+  client.print("User-Agent: ");client.print(CHROME_WIN_UA);client.print("\r\n");
+  client.print("X-CSRFToken: ");client.print(account->csrftoken);client.print("\r\n");
+  client.print("Connection: close\r\n");
+  for (int idx=0; idx<account->cookies_nb; idx++) {
+    client.print("Cookie: ");client.print(account->cookies[idx]->k);client.print("=");client.print(account->cookies[idx]->v);client.print("\r\n");
+  }
+  client.print("\r\n");
 
   account->lasttry = millis();
 
   long returncode = 0;
+  bool headersFinished = false;
   while (client.connected() || client.available()) {
     if (client.available()) {
-      String line = client.readStringUntil('\n');
+      String line;
+      if (!headersFinished) {
+        line = client.readStringUntil('\n');
+        if (line.equals("\r")) headersFinished = true;
 
-      HANDLE_RETURN_CODE
-      HANDLE_SET_COOKIE
-
-      /* Too many requests, lets cooldown this account */
-      if (returncode == 429) {
-        account->cooldown_until = millis() + COOLDOWN_MIN;
-        break;
+        HANDLE_RETURN_CODE
+        HANDLE_SET_COOKIE
+        /* Too many requests, lets cooldown this account */
+        if (returncode == 429) {
+          account->cooldown_until = millis() + COOLDOWN_MIN;
+          break;
+        }
       }
-
-      int pos = line.indexOf(String("\"edge_followed_by\":{\"count\":"));
-      if ((pos != -1) && (returncode == 200)) {
-        int start = pos + strlen("\"edge_followed_by\":{\"count\":");
-        int end = line.indexOf('\"', start);
-        account->ok_nb++;
-        return line.substring(start, end).toInt();
+      else {
+        line = client.readStringUntil(',');
+        int pos = line.indexOf("\"edge_followed_by\":{\"count\":");
+        if ((pos != -1) && (returncode == 200)) {
+          int start = pos + strlen("\"edge_followed_by\":{\"count\":");
+          int end = line.indexOf('\"', start);
+          account->ok_nb++;
+          return line.substring(start, end).toInt();
+        }
       }
+      LOG(line)
     }
   }
 
@@ -617,8 +638,6 @@ long followersCount(account_t* account) {
   logout(account);
   return -1;
 }
-
-long count = 0;
 
 account_t* selectAccount() {
   account_t** available = NULL;
@@ -670,12 +689,17 @@ account_t* doOrGetLogin(account_t* account){
   return NULL;
 }
 
+
+long count = 0;
+
 void loop() {
   bool night = false;
   time_t tnow = time(nullptr);
   struct tm *tnowr = gmtime(&tnow);
   uint8_t percent = 0;
   uint8_t progress = 0;
+  account_t* account;
+  long result;
 
   if (config.night.start < config.night.end) {
     if (config.night.start <= tnowr->tm_hour and tnowr->tm_hour < config.night.end) night = true;
@@ -689,15 +713,17 @@ void loop() {
     Serial.println("---");
     api_lasttime = millis();
     Serial.print("Free HEAP: ");
-    Serial.println(ESP.getFreeHeap());
+    Serial.print(ESP.getFreeHeap());
+    Serial.print("/");
+    Serial.print(ESP.getHeapFragmentation());
+    Serial.print("/");
+    Serial.println(ESP.getMaxFreeBlockSize());
     Serial.print("Date: ");
-    Serial.print(String(ctime(&tnow)));
+    Serial.print(ctime(&tnow));
 
-    if (account_t* account = doOrGetLogin(selectAccount())) {
-        long result =  followersCount(account);
-        if (result > 0)
-          count = result;
-    }
+    if ((account = doOrGetLogin(selectAccount())) != NULL)
+      if ((result = followersCount(account)) > 0)
+        count = result;
 
     printConfig(&config);
 
