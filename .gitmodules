@@ -1,4 +1,0 @@
-[submodule "lib/LedControl"]
-	path = lib/LedControl
-	url = https://github.com/debuti/LedControl
-	branch = master
