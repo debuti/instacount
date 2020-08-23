@@ -4,9 +4,9 @@
 #define XSTR(s)	 STR(s)
 #define STR(s)	 #s
 
-#define DISPLAY_DATA_IN				15
-#define DISPLAY_CLK						12
-#define DISPLAY_LOAD					13
+#define DISPLAY_CLK						14
+#define DISPLAY_LOAD					12
+#define DISPLAY_DATA_IN				13
 #define MAX7219_COUNT					1
 
 #define DRD_TIMEOUT 					5						// Number of seconds after reset during which a subseqent reset will be considered a double reset. This sketch uses drd.stop() rather than relying on the timeout
@@ -26,7 +26,6 @@
 #define COOLDOWN_INC  				3
 
 #define DEFAULT_AP						"instacount"
-#define DEFAULT_PW						"mendiolas"
 #define DEFAULT_NIGHT_START		0
 #define DEFAULT_NIGHT_END			8
 #define DEFAULT_NIGHT_SPACING	3600

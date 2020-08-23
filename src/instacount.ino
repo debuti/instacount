@@ -80,8 +80,7 @@ WiFiClientSecure client;
 DoubleResetDetector drd(DRD_TIMEOUT, DRD_ADDRESS);
 LedControl lc = LedControl(DISPLAY_DATA_IN, DISPLAY_CLK, DISPLAY_LOAD, MAX7219_COUNT);
 
-char ap[] PROGMEM = DEFAULT_AP;
-char pw[] PROGMEM = DEFAULT_PW;
+char ap[] = DEFAULT_AP;
 
 const unsigned char caCert[] PROGMEM = DIGICERT_SHA2_HIGH_ASSURANCE_SERVER_CA;
 const unsigned int caCertLen = (sizeof(caCert) / sizeof(caCert[0]));
@@ -358,10 +357,10 @@ void setup() {
   /** Check for double reset **/
   if (drd.detectDoubleReset()) {
     Serial.println("Double Reset Detected");
-    wifiManager.startConfigPortal(ap, pw);
+    wifiManager.startConfigPortal(ap, NULL);
   } else {
     Serial.println("No Double Reset Detected");
-    wifiManager.autoConnect(ap, pw);
+    wifiManager.autoConnect(ap, NULL);
   }
 
   /* Turn the LED off by making the voltage HIGH */
