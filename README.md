@@ -1,6 +1,24 @@
 # instacount
 
-Arduino sketch to display the followers count for any user
+Sketch and hardware solution to display the followers count for any user
+
+## Quick start
+ * Connect to _instacount_ hotspot -> A captive portal for configuration will open
+ * Insert your wifi details, the target Instagram account and your Instagram credentials. Adjust the other parameters to taste
+ * Once saved the device will try to connect to the wifi network, if successful it will try to fetch the followers count using one of the provided Instagram credentials, if successful you are good to go, if not ..
+ 
+## Troubleshooting
+ * The device doesnt show anything on the display
+   * Sometimes these chinese displays are unresponsive. Unplug and replug several times until the digits light up
+ * The device never goes out of config
+   * The wifi credentials are not correct, recheck them
+ * The device always shows 0 followers
+   * The Instagram credentials are not correct, recheck them. 
+   * Try to use those credentials in a browser to see if they are challenged or banned by Instagram
+ * The device shows 0 followers when powered-up
+   * I'm working on this
+ * When I reconfigure the device, the Instagram credentials are not persisted
+   * They are, but they are not showed for security reasons! If the module is set to config mode without you knowing it, and your neighbour connects to the config page s/he will see your plain text password
 
 ## Description and usage
 Polling updated display to show the count of followers of a given Instagram account.
@@ -24,14 +42,15 @@ Last, Instagram handles suspicious activities by issuing a challenge. If a given
 ### BOM
  * ESP12E board
  * MAX7219 8-digit 8-segments module
- * Breakout board fro ESP12E
- * 3,3V voltage regulator
+ * Breakout board for ESP12E
+ * 3,3V voltage regulator (remove the 0 Ohm resistor from the breakout board!)
 
 ### Connections
-ESP12E D6 to MAX7219 CLK
-ESP12E D7 to MAX7219 CS
-ESP12E D8 to MAX7219 DIN
-
+```
+ESP12E GPIO13 to MAX7219 CLK
+ESP12E GPIO12 to MAX7219 CS
+ESP12E GPIO14 to MAX7219 DIN
+```
 
 ## Build environment
  * PlatformIO: Quick-install with this *nosudo* oneliner `python3 -c "$(curl -fsSL https://raw.githubusercontent.com/platformio/platformio/develop/scripts/get-platformio.py)"; export PATH=$PATH:~/.platformio/penv/bin`
